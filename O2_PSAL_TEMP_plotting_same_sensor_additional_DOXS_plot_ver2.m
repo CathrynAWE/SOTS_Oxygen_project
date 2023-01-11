@@ -6,6 +6,8 @@
 
 clear
 close all
+addpath 'C:\Users\cawynn\OneDrive - University of Tasmania\Documents\MATLAB\gsw_matlab_v3_06_13';
+addpath 'C:\Users\cawynn\OneDrive - University of Tasmania\Documents\MATLAB\gsw_matlab_v3_06_13\library';
 
 mooring{1} = 'SOFS-9-2020';
 mooring{2} = 'SOFS-8-2019';
@@ -26,10 +28,13 @@ mooring{16} = 'Pulse-6-2009';
 
 
 %for i = 1:length(mooring)
-for i = 1:1
+for i = 3
    % the variables to plot in the overview plot with subplots
-   plotVar={'PRES';'DOX2';'DOXS';'TEMP';'PSAL'};
-   % the variable to plot on its own
+%    plotVar={'PRES';'DOX2';'DOXS';'OXSOL';'TEMP';'PSAL'};
+    plotVar={'PRES';'DOX2';'DOXS';'TEMP';'PSAL'};
+%     plotVar={'DOXS'};
+
+    % the variable to plot on its own
    plotVar2='DOXS';
    compile_files(mooring{i});
    plot_O2(mooring{i},plotVar);
@@ -95,13 +100,20 @@ function [var, var_unit, varQC, time, timestart, timeend, pres, nominal_depth, i
             plotVarSBE = ['SBE_', plotVar];
             var = ncread(file, plotVarSBE);
             var_unit = ncreadatt(file, plotVarSBE, 'units');
+            disp('SBE variables used')
          catch ME
-            disp('netCDF variable not found')
+            disp([plotVar ' - netCDF variable not found'])
             var=[];
             var_unit=[];
          end
     end
 
+    if strcmp(plotVar, 'DOXS')
+        if strcmp(var_unit, '%')
+            var = var/100;
+        end
+    end
+    
     if ~isempty(var)
         try 
             varQCname = strsplit(ncreadatt(file, plotVar, 'ancillary_variables'), ' ');
@@ -124,11 +136,37 @@ function [var, var_unit, varQC, time, timestart, timeend, pres, nominal_depth, i
 % it
     if plotVar == 'DOXS' & isempty(var)
         try
-            oxsol = ncread(file,'OXSOL');
+            try
+                oxsol = ncread(file,'OXSOL');
+            catch ME
+                oxsol = ncread(file,'OXSOL2');
+            end
             dox2 = ncread(file, 'DOX2');
             var = dox2./oxsol;
+%             var = oxsol;
+            disp('found oxsol variable')
+            disp(oxsol(1:100))
+            disp(var(1:100))
         catch ME
-             var=[];
+%              var=[];
+               PSAL = ncread(file,'PSAL');
+               try
+                   Pres = ncread(file,'PRES');
+               catch ME
+                   Pres = ncread(file,'PRES_REL');
+               end
+               TEMP = ncread(file,'TEMP');
+               lon = ncread(file, 'LONGITUDE');
+               lat = ncread(file, 'LATITUDE');
+               dox2 = ncread(file, 'DOX2');
+               
+               SA = gsw_SA_from_SP(PSAL,Pres, lon, lat);
+               pt = gsw_pt0_from_t(SA, TEMP, Pres);
+               oxsol = gsw_O2sol_SP_pt(PSAL, pt);
+               
+               var = dox2./oxsol;
+               disp('had to calculate oxsol - min equal')
+               disp(num2str(min(oxsol)))
         end
     end
     
@@ -162,6 +200,7 @@ function [var, var_unit, varQC, time, timestart, timeend, pres, nominal_depth, i
         pres = ncread(file,'PRES');
     catch ME
         pres = nominal_depth * ones(size(time));
+        disp('used nominal depth as pressure variable')
     end
     
     if ischar(nominal_depth)
@@ -204,7 +243,9 @@ function plot_O2(mooring,plotVar)
 
             legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
 
-            subplot(length(plotVar),1,v)
+%             subplot(length(plotVar),1,v)
+            sh(v) = subplot(length(plotVar),1,v);
+
             hold on
             grid on
 
@@ -274,9 +315,10 @@ function plot_O2(mooring,plotVar)
 
                 legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
 
-                subplot(length(plotVar),1,v)
-                hold on
-                grid on
+%                 subplot(length(plotVar),1,v)
+               sh(v) = subplot(length(plotVar),1,v);
+               hold on
+               grid on
 
                 if isempty(var)
                     disp('netCDF variable not found for plotting')
@@ -337,13 +379,15 @@ function plot_O2(mooring,plotVar)
 
         end
     end
-     name = [mooring , '_subplots_for_QC']; 
-     print(fig,name, '-dpng')
+    linkaxes(sh, 'x');
+    name = [mooring , '_subplots_for_QC'];
+    print(fig,name, '-dpng')  
 end
 
 % function to create the single plot with just one variable
 function plot_single_var(mooring, plotVar2)
     [files_to_plot, Optode_fn] = compile_files(mooring);    
+    cl = distinguishable_colors(size(files_to_plot,2));  
     fig=figure()
     hold on
     
@@ -368,7 +412,8 @@ function plot_single_var(mooring, plotVar2)
                 end   
                 legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
                 
-                plot(time,varmsk,'DisplayName',legend_name);
+                % plot(time,varmsk,'DisplayName',legend_name
+                plot(time,varmsk,'DisplayName',legend_name, 'Color', cl(k,:));
                
             else
                 for n = 1:size(var,1)
@@ -416,7 +461,7 @@ function plot_single_var(mooring, plotVar2)
                     end   
                 legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
 
-                plot(time,varmsk,'DisplayName',legend_name);
+                plot(time,varmsk,'DisplayName',legend_name,'Color', cl(k,:));
             else
                 for n = 1:size(var,1)
                 if strcmp(instrument,'unknown')
@@ -441,7 +486,7 @@ function plot_single_var(mooring, plotVar2)
                     varmsk = var;
                 end
 
-                plot(time,varmsk(n,:),'DisplayName',legend_name);
+                plot(time,varmsk(n,:),'DisplayName',legend_name,'Color', cl(k,:));
                 end
             end
         

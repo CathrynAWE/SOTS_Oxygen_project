@@ -79,11 +79,11 @@ def plot_goodCTD(plotvar):
         upper_bound = 325
         if plotvar == 'DOX2':
             if O2_umol_kg.min() > lower_bound and O2_umol_kg.max() < upper_bound:
-                plt.scatter(O2_umol_kg, CTD_data.PRESSURE, s=2)
+                plt.scatter(O2_umol_kg, CTD_data.PRESSURE, s=1, marker = '.', color = 'g')
                 leg += [CTD_data.SURVEY_NAME[0] + '_' + str(CTD_data.STATION[0])]
         else:
             if O2_umol_kg.min() > lower_bound and O2_umol_kg.max() < upper_bound:
-                plt.scatter(doxs, CTD_data.PRESSURE, s=2)
+                plt.scatter(doxs, CTD_data.PRESSURE, s=1, marker = '.', color = 'g')
                 leg += [CTD_data.SURVEY_NAME[0] + '_' + str(CTD_data.STATION[0])]
     return data
 
@@ -172,12 +172,12 @@ def store_data():
 
 if __name__ == "__main__":
     fig = plt.figure()
-    plotvar = input('DOX2 or oxygen saturation? DOX2 or DOXS')
+    plotvar = input('Dissolved oxygen or oxygen saturation? DOX2 or DOXS')
 
     plot_goodCTD(plotvar)
     if plotvar == 'DOX2':
         plt.gca().set_xlabel('Dissolved oxygen umol/kg')
-        plt.gca().set_yalbel('Depth - log scale')
+        plt.gca().set_ylabel('Depth - log scale')
     else:
         plt.gca().set_xlabel('Oxygen saturation')
         plt.gca().set_ylabel('Depth - log scale')

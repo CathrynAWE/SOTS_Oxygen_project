@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
+import matplotlib.markers
 from netCDF4 import Dataset, num2date
 import sys
 import numpy as np
@@ -62,9 +62,9 @@ def plot():
 
     #fig = plt.figure()
     plt.plot(np.max(o_mean, axis=0) + 3*np.max(o_std, axis=0), depth, linewidth=4,
-         linestyle=(0, (5, 2, 1, 2)), dash_capstyle='round')
+         linestyle=(0, (5, 2, 1, 2)), dash_capstyle='round', color='b')
     plt.plot(np.min(o_mean, axis=0) - 3*np.max(o_std, axis=0), depth, linewidth=4,
-         linestyle=(0, (5, 2, 1, 2)), dash_capstyle='round')
+         linestyle=(0, (5, 2, 1, 2)), dash_capstyle='round',color = 'r')
     #plt.gca().set_ylabel('Depth')
     #plt.gca().set_xlabel('Dissolved oxygen uM/kg')
     #leg = ['Maximum mean + 3 * STD', 'Minimum mean - 3 * STD']

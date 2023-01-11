@@ -6,7 +6,7 @@ import os
 import datetime as dt
 
 def get_data():
-    location = 'C:/Users/cawynn/cloudstor/Shared/sots-Oxygen'
+    location = 'C:/Users/cawynn/cloudstor/Shared/sots-Oxygen (2) (2)'
 
     #mooring_name = ['SOFS-9-2020', 'SOFS-8-2019', 'SOFS-7.5-2018', 'SOFS-6-2017', 'SOFS-5-2015', 'SOFS-4-2013', 'FluxPulse-1-2016']
     mooring_name = ['SOFS-9-2020', 'SOFS-8-2019', 'SOFS-7.5-2018', 'SOFS-7-2018', 'SOFS-6-2017', 'SOFS-5-2015',
@@ -99,7 +99,7 @@ def plot_sensor_O2(depth_lim, plotvar):
 
                     elif plotvar == 'depth':
                         plotDepth = np.full((var.size, 1), depth)
-                        plt.plot(var, plotDepth)
+                        plt.plot(var, plotDepth, linewidth = 1)
 
                 # for older netCDF files multiple sensor data was combined into one variable, with multiple dimensions (time and the
                 # associated sensor depth)
@@ -111,26 +111,26 @@ def plot_sensor_O2(depth_lim, plotvar):
                             plt.plot(dt_time, var[:,0])
                         elif plotvar == 'depth':
                             plotDepth = np.full((var.size, 1), depth)
-                            plt.plot(var, plotDepth)
+                            plt.plot(var, plotDepth, linewidth = 1)
 
                     elif var.shape[1]>10:
                         if plotvar == 'time':
                             print(sensor_depth)
-                            plt.plot(dt_time, var[0,:])
+                            plt.plot(dt_time, var[0,:], linewidth = 1)
 
                         elif plotvar == 'depth':
                             plotDepth = np.full((1, var.size), depth)
-                            plt.plot(var, plotDepth)
+                            plt.plot(var, plotDepth, linewidth = 1)
             else:
                 for i in range(0, varlist.__len__()):
                     var = nc.variables[i]
                     depth = nc.variables[i].getattr('sensor_depth')
                     if plotvar == 'time':
-                        plt.plot(dt_time, var)
+                        plt.plot(dt_time, var, linewidth = 1)
 
                     elif plotvar == 'depth':
                         plotDepth = np.full((var.size, 1), depth)
-                        plt.plot(var, plotDepth)
+                        plt.plot(var, plotDepth, linewidth = 1)
 
         nc.close()
 
@@ -144,10 +144,10 @@ if __name__ == "__main__":
 
     if plotvar == 'depth':
         plt.gca().invert_yaxis()
-        #plt.gca().set_yscale('log')
+        plt.gca().set_yscale('log')
         plt.xlim([0, 800])
         plt.gca().set_xlabel('Dissolved oxygen in umol/kg')
-        plt.gca().set_ylabel('Depth')
+        plt.gca().set_ylabel('Depth - log scale')
     else:
         plt.ylim([0, 400])
         plt.getca().set_xlabel('Time')

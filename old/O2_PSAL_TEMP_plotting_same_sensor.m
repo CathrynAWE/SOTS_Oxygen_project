@@ -199,7 +199,8 @@ function plot_O2(mooring,plotVar)
 
             legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
 
-            subplot(length(plotVar),1,v)
+%             subplot(length(plotVar),1,v)
+            sh(v) = subplot(length(plotVar),1,v);
             hold on
             grid on
 
@@ -270,7 +271,8 @@ function plot_O2(mooring,plotVar)
 
                 legend_name = [num2str(nominal_depth) 'm; ' instrument ' ' sn];
 
-                subplot(length(plotVar),1,v)
+%                 subplot(length(plotVar),1,v)
+                sh(v) = subplot(length(plotVar),1,v);
                 hold on
                 grid on
 
@@ -337,4 +339,5 @@ function plot_O2(mooring,plotVar)
     end
     name = [mooring , '_subplots_for_QC']; 
     %print(fig,name, '-dpng')
+    linkaxes(sh, 'x');
 end
